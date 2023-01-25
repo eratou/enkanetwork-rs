@@ -85,7 +85,7 @@ impl EnkaNetwork{
 		}
 	}
 	pub async fn fetch_user(&self,uid:i32)->Result<RawUserData,Option<reqwest::Error>>{
-		let contents=self.request(format!("https://enka.network/u/{}/__data.json",uid)).await?;
+		let contents=self.request(format!("https://enka.network/api/uid/{}/",uid)).await?;
 		let lastupdate=SystemTime::now();
 		Ok(RawUserData::from_raw(contents,uid,lastupdate))
 	}
