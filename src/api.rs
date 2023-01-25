@@ -27,7 +27,9 @@ impl EnkaNetwork{
 		let assets_cache=MemoryCache::new(String::from("./cache/assets/"))?;
 		let user_cache=MemoryCache::new(String::from("./cache/u/"))?;
 		let mut api=Self::from(client,assets_cache,user_cache);
-		api.set_store(futures::executor::block_on(api.store()).ok());
+		if let Ok(rt)=tokio::runtime::Builder::new_current_thread().enable_all().build(){
+			api.set_store(rt.block_on(api.store()).ok());
+		}
 		Ok(api)
 	}
 	pub fn set_header(&mut self,header:Option<HeaderMap>){
