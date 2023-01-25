@@ -46,15 +46,16 @@ async fn create_user_data(api:EnkaNetwork,uid:i32,font:&Font<'static>,language:i
 			let mut create_char_cards=vec![];
 			for id in avatar_list{
 				create_char_cards.push(async{
-					let character=data.character(*id).unwrap();
-					let character_name=character.name(&api,language.as_ref()).unwrap();
-					let char_card=character_card(&api,&character,&font,language.as_ref(),&icons).await;
-					char_card.save(format!("./img/{}_card.png",&character_name)).unwrap();
+					if let Some(character)=data.character(*id){
+						let character_name=character.name(&api,language.as_ref()).unwrap();
+						let char_card=character_card(&api,&character,&font,language.as_ref(),&icons).await;
+						char_card.save(format!("./img/{}_card.png",&character_name)).unwrap();
+					}
 				});
 			}
 			//futures::future::join_all(create_char_cards).await;
-			futures::join!(create_profile_card);
-			//futures::join!(create_profile_card,create_show_name_cards,futures::future::join_all(create_char_cards));
+			//futures::join!(create_profile_card);
+			futures::join!(create_profile_card,futures::future::join_all(create_char_cards));
 		},
 		Err(e)=>{
 			println!("{}",e);
