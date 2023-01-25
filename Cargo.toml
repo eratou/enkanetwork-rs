@@ -1,6 +1,6 @@
 [package]
 name = "enkanetwork-rs"
-version = "0.0.1"
+version = "0.0.2"
 license = "MIT/Apache-2.0"
 authors = ["eratou"]
 edition = "2021"
