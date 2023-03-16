@@ -31,10 +31,12 @@ fn main(){
 * [x] x86_64-pc-windows-gnu
 * [x] x86_64-unknown-linux-gnu
 * [x] x86_64-unknown-linux-musl
+* [x] i686-pc-windows-gnu
+* [x] i686-unknown-linux-gnu
+* [ ] i686-unknown-linux-musl
 * [ ] wasm32-unknown-unknown
 * [ ] aarch64-unknown-linux-musl
-* [ ] i686-pc-windows-gnu
-* [ ] i686-unknown-linux-musl
+* [ ] aarch64-unknown-linux-gnu
 
 ## License
 Apache 2.0 or MIT
