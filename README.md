@@ -5,8 +5,8 @@ https://enka.network/ で提供されるAPIのクライアントライブラリ
 ## 例  
 ```rust
 fn main(){
-	enkanetwork_rs::block_on(async{
-		let api=enkanetwork_rs::EnkaNetwork::new().unwrap();
+	let api=enkanetwork_rs::EnkaNetwork::new().unwrap();
+	enkanetwork_rs::block_on(async move{
 		match api.simple(837338702).await{
 			Ok(data)=>{
 				println!("{:?}",data);
