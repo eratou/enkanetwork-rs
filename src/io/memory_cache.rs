@@ -102,4 +102,8 @@ impl MemoryCache{
 		}
 		(data,time)
 	}
+	///unimplemented
+	pub async fn set_expire(&self,_local_path:impl AsRef<str>,_time:SystemTime){
+		
+	}
 }

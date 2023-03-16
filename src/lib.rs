@@ -12,6 +12,10 @@ pub use fight_prop::*;
 pub use character::*;
 pub use icon::IconData;
 pub use store::*;
+pub use reqwest;
+
+#[cfg(feature="redis-cache")]
+pub use redis;
 
 #[cfg(feature="text")]
 mod textrender;
@@ -28,7 +32,14 @@ mod tests {
 	#[test]
 	fn it_works() {
 		futures::executor::block_on(async{
-			let api=EnkaNetwork::new().unwrap();
+			let client=reqwest::Client::builder().user_agent(crate::USER_AGENT).build().ok();
+			let assets_cache=MemoryCache::new("./cache/assets/".into()).unwrap();
+			let user_cache=MemoryCache::new("./cache/u/".into()).unwrap();
+			let mut api=EnkaNetwork::from(client,assets_cache,user_cache);
+			let api_copy=api.clone();
+			api.set_store(block_on(async move{
+				api_copy.store().await.ok()
+			}).unwrap());
 			let bytes=api.assets("https://cdn.discordapp.com/attachments/555934591056085013/939543539073814598/about.png").await.unwrap();
 			let bytes=bytes.as_ref();
 			let read=image::io::Reader::new(Cursor::new(bytes));

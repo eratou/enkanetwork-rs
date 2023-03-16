@@ -1,13 +1,33 @@
 use std::{sync::Arc, collections::HashMap};
 
 use chrono::{DateTime,Local};
-use enkanetwork_rs::{EnkaNetwork, Character, NameCard, UserData, IconData, Weapon, Reliquary, block_on};
+use enkanetwork_rs::{EnkaNetwork, Character, NameCard, UserData, IconData, Weapon, Reliquary, block_on, MemoryCache,reqwest::Client};
 use image::{DynamicImage, ImageBuffer, Rgba};
 use rusttype::{Font, Scale};
 
+#[cfg(feature="redis")]
+fn caches()->Result<(MemoryCache,MemoryCache),impl std::fmt::Debug>{
+	let client = redis::Client::open("redis://127.0.0.1/")?;
+	let rt=tokio::runtime::Builder::new_current_thread().enable_all().build()?;
+	let cache=rt.block_on(async move{
+		MemoryCache::from(Some(String::from("./cache/")), client).await
+	})?;
+	Ok::<(MemoryCache, MemoryCache),redis::RedisError>((cache.clone(),cache))
+}
+#[cfg(not(feature="redis"))]
+fn caches()->Result<(MemoryCache,MemoryCache),impl std::fmt::Debug>{
+	Ok::<(MemoryCache, MemoryCache),std::io::Error>((MemoryCache::new(String::from("./cache/assets/"))?,
+	MemoryCache::new(String::from("./cache/u/"))?))
+}
 fn main(){
 	let start_time=std::time::Instant::now();
-	let api=EnkaNetwork::new().unwrap();
+	let client=Client::builder().user_agent("ExampleUserAgent").build().ok();
+	let (assets_cache,user_cache)=caches().unwrap();
+	let mut api=EnkaNetwork::from(client,assets_cache,user_cache);
+	let api_copy=api.clone();
+	api.set_store(block_on(async move{
+		api_copy.store().await.ok()
+	}).unwrap());
 	let language="ja";
 	print_duration("init",&start_time);
 	let api_copy=api.clone();

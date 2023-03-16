@@ -24,6 +24,7 @@ fn main(){
 |async-io | ファイル操作に[async-std](https://crates.io/crates/async-std)を使用します |
 |text | テキストの描画を補助する機能を有効にします |
 |vector-icon | svgアイコンの描画を補助する機能を有効にします |
+|redis-cache | メモリキャッシュをredisに置き換えます |
 
 ## target support
 * [x] x86_64-pc-windows-msvc

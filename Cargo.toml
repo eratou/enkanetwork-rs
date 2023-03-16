@@ -1,6 +1,6 @@
 [package]
 name = "enkanetwork-rs"
-version = "0.0.2"
+version = "0.1.0"
 license = "MIT/Apache-2.0"
 authors = ["eratou"]
 edition = "2021"
@@ -12,6 +12,7 @@ default = ["async-io","text","vector-icon"]
 text = ["imageproc","rusttype","woff2","rust-woff"]
 vector-icon = ["zip","usvg","resvg"]
 async-io = []
+redis-cache=["redis","chrono"]
 
 [dependencies]
 futures = "0.3"
@@ -33,6 +34,9 @@ zip = { version = "0.6.3", default-features = false  , features = ["deflate"], o
 usvg = { version = "0.28.0", optional = true}
 resvg = { version = "0.28.0", optional = true}
 
+redis = { version = "0.22.3", features = ["tokio-comp"] , optional = true}
+chrono = { version = "^0.4.23", optional = true}
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "*", features = ["rt-multi-thread"]}
 reqwest = { version = "*", default-features = false , features = ["rustls-tls-native-roots"] }
@@ -48,6 +52,10 @@ required-features = ["text","vector-icon"]
 [[example]]
 name = "progress"
 required-features = ["text","vector-icon"]
+
+[[example]]
+name = "redis_db"
+required-features = ["redis-cache"]
 
 [profile.release]
 strip = true

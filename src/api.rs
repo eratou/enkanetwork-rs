@@ -21,16 +21,47 @@ impl EnkaNetwork{
 	fn client_builder()->ClientBuilder{
 		Client::builder()
 	}
-	pub fn new()->std::io::Result<Self>{
+	#[cfg(feature="redis")]
+	fn caches()->Result<(MemoryCache,MemoryCache),impl ToString>{
+		let client = redis::Client::open("redis://127.0.0.1/")?;
+		let rt=tokio::runtime::Builder::new_current_thread().enable_all().build()?;
+		let cache=rt.block_on(async move{
+			MemoryCache::from(Some(String::from("./cache/")), client).await
+		})?;
+		Ok::<(MemoryCache, MemoryCache),redis::RedisError>((cache.clone(),cache))
+	}
+	#[cfg(not(feature="redis"))]
+	fn caches()->Result<(MemoryCache,MemoryCache),impl ToString>{
+		Ok::<(MemoryCache, MemoryCache),std::io::Error>((MemoryCache::new(String::from("./cache/assets/"))?,
+		MemoryCache::new(String::from("./cache/u/"))?))
+	}
+	///Develop And Test API
+	/// ```
+	/// let client=enkanetwork_rs::reqwest::Client::builder().user_agent("ExampleUserAgent").build().ok();
+	/// let assets_cache=MemoryCache::new("./cache/assets/".into()).unwrap();
+	/// let user_cache=MemoryCache::new("./cache/u/".into()).unwrap();
+	/// let mut api=EnkaNetwork::from(client,assets_cache,user_cache);
+	/// let api_copy=api.clone();
+	/// api.set_store(block_on(async move{
+	/// 	api_copy.store().await.ok()
+	/// }).unwrap());
+	/// ```
+	#[deprecated]
+	pub fn new()->Result<Self,String>{
 		let client=Self::client_builder();
 		let client=client.build().ok();
-		let assets_cache=MemoryCache::new(String::from("./cache/assets/"))?;
-		let user_cache=MemoryCache::new(String::from("./cache/u/"))?;
+		let (assets_cache,user_cache)=match Self::caches(){
+			Ok(v)=>v,
+			Err(e)=>return Err(e.to_string())
+		};
 		let mut api=Self::from(client,assets_cache,user_cache);
 		if let Ok(rt)=tokio::runtime::Builder::new_current_thread().enable_all().build(){
 			api.set_store(rt.block_on(api.store()).ok());
 		}
 		Ok(api)
+	}
+	pub async fn set_expire(&self,data:&UserData){
+		self.user_cache.set_expire(format!("{}",data.uid()),data.reload_time()).await;
 	}
 	pub fn set_header(&mut self,header:Option<HeaderMap>){
 		match header{
@@ -66,6 +97,7 @@ impl EnkaNetwork{
 			store:None,
 		}
 	}
+	///Hidh Level API
 	pub async fn reload(&self,data:&UserData)->Result<Option<UserData>,String>{
 		let lastupdate=SystemTime::now();
 		if data.reload_time()>=lastupdate{
@@ -75,7 +107,9 @@ impl EnkaNetwork{
 			match raw.await {
 				Ok(raw)=>{
 					let _=self.push_cache(&raw).await;
-					Ok(Some(raw.resolve(self)?))
+					let ud=raw.resolve(self)?;
+					self.set_expire(&ud).await;
+					Ok(Some(ud))
 				},
 				Err(e)=>Err(match e{
 					Some(e)=>format!("{}",e),
@@ -171,6 +205,7 @@ impl EnkaNetwork{
 			}
 		}
 	}
+	///Hidh Level API
 	pub async fn simple(&self,uid:i32)->Result<UserData,String>{
 		match self.find_cache(uid).await{
 			Some(cache)=>{
@@ -189,7 +224,9 @@ impl EnkaNetwork{
 				match userdata {
 					Ok(userdata)=>{
 						let _=self.push_cache(&userdata).await;
-						userdata.resolve(self)
+						let ud=userdata.resolve(self)?;
+						self.set_expire(&ud).await;
+						Ok(ud)
 					},
 					Err(e)=>Err(match e{
 						Some(e)=>format!("{}",e),
