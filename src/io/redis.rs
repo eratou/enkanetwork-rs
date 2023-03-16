@@ -38,8 +38,7 @@ impl MemoryCache{
 		if let Some(disk_dir)=&self.disk_dir{
 			let mut path=PathBuf::from(disk_dir);
 			path.push(Path::new(local_path.as_ref()));
-			let (fw,nw)=futures::join!(crate::io::write_file(path,buf.as_ref(),time),job);
-			nw?;
+			let (fw,_)=futures::join!(crate::io::write_file(path,buf.as_ref(),time),job);
 			fw?;
 		}else{
 			let _=job.await?;
