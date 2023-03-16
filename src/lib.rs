@@ -23,7 +23,7 @@ mod textrender;
 #[cfg(feature="vector-icon")]
 mod icon;
 
-pub const USER_AGENT:&'static str="enkanetwork.rs/v0.0.2";
+pub const USER_AGENT:&'static str="enkanetwork.rs/v0.1.0";
 
 #[cfg(test)]
 mod tests {
