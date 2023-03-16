@@ -5,7 +5,7 @@ use enkanetwork_rs::{EnkaNetwork, Character, NameCard, UserData, IconData, Weapo
 use image::{DynamicImage, ImageBuffer, Rgba};
 use rusttype::{Font, Scale};
 
-#[cfg(feature="redis")]
+#[cfg(feature="redis-cache")]
 fn caches()->Result<(MemoryCache,MemoryCache),impl std::fmt::Debug>{
 	let client = redis::Client::open("redis://127.0.0.1/")?;
 	let rt=tokio::runtime::Builder::new_current_thread().enable_all().build()?;
@@ -14,7 +14,7 @@ fn caches()->Result<(MemoryCache,MemoryCache),impl std::fmt::Debug>{
 	})?;
 	Ok::<(MemoryCache, MemoryCache),redis::RedisError>((cache.clone(),cache))
 }
-#[cfg(not(feature="redis"))]
+#[cfg(not(feature="redis-cache"))]
 fn caches()->Result<(MemoryCache,MemoryCache),impl std::fmt::Debug>{
 	Ok::<(MemoryCache, MemoryCache),std::io::Error>((MemoryCache::new(String::from("./cache/assets/"))?,
 	MemoryCache::new(String::from("./cache/u/"))?))

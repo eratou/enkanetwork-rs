@@ -21,7 +21,7 @@ impl EnkaNetwork{
 	fn client_builder()->ClientBuilder{
 		Client::builder()
 	}
-	#[cfg(feature="redis")]
+	#[cfg(feature="redis-cache")]
 	fn caches()->Result<(MemoryCache,MemoryCache),impl ToString>{
 		let client = redis::Client::open("redis://127.0.0.1/")?;
 		let rt=tokio::runtime::Builder::new_current_thread().enable_all().build()?;
@@ -30,7 +30,7 @@ impl EnkaNetwork{
 		})?;
 		Ok::<(MemoryCache, MemoryCache),redis::RedisError>((cache.clone(),cache))
 	}
-	#[cfg(not(feature="redis"))]
+	#[cfg(not(feature="redis-cache"))]
 	fn caches()->Result<(MemoryCache,MemoryCache),impl ToString>{
 		Ok::<(MemoryCache, MemoryCache),std::io::Error>((MemoryCache::new(String::from("./cache/assets/"))?,
 		MemoryCache::new(String::from("./cache/u/"))?))
