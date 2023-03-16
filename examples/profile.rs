@@ -1,8 +1,7 @@
 use std::{sync::Arc, collections::HashMap};
 
 use chrono::{DateTime,Local};
-use enkanetwork_rs::{EnkaNetwork, Character, NameCard, UserData, IconData, Weapon, Reliquary};
-use futures::executor::block_on;
+use enkanetwork_rs::{EnkaNetwork, Character, NameCard, UserData, IconData, Weapon, Reliquary, block_on};
 use image::{DynamicImage, ImageBuffer, Rgba};
 use rusttype::{Font, Scale};
 
@@ -11,13 +10,15 @@ fn main(){
 	let api=EnkaNetwork::new().unwrap();
 	let language="ja";
 	print_duration("init",&start_time);
-	let font=block_on(api.web_font("https://github.com/googlefonts/zen-marugothic/raw/main/fonts/ttf/ZenMaruGothic-Regular.ttf")).unwrap();
-	let font=Arc::new(font);
-	//let data=block_on(api.simple(837338702));
-	print_duration("load font data",&start_time);
 	let api_copy=api.clone();
+	let font=block_on(async move{
+		let url="https://github.com/googlefonts/zen-marugothic/raw/main/fonts/ttf/ZenMaruGothic-Regular.ttf";
+		Arc::new(api.web_font(url).await.unwrap())
+	}).unwrap();
+	//let data=block_on(async move{api_copy.simple(837338702).await}).unwrap().unwrap();
+	print_duration("load font data",&start_time);
 	enkanetwork_rs::block_on(async move{
-		create_user_data(api_copy,801267279,&font,language).await;
+		create_user_data(api_copy,618285856,&font,language).await;
 		//create_user_data(api_copy,837338702,&font,language).await;
 	}).unwrap();
 	print_duration("all end",&start_time);
