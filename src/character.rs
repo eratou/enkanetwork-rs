@@ -553,7 +553,12 @@ impl Weapon{
 		&self.icon
 	}
 	pub async fn image_icon(&self,api:&EnkaNetwork)->Result<DynamicImage, String>{
-		crate::ui_image(self.name_icon(),api).await
+		let name=if self.ascension>1{
+			Cow::Owned(format!("{}_Awaken",self.name_icon()))
+		}else{
+			Cow::Borrowed(self.name_icon())
+		};
+		crate::ui_image(name.as_ref(),api).await
 	}
 	pub fn ascension_level(&self)->u8{
 		ascension_level_map(self.ascension)

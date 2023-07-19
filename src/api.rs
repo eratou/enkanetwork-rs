@@ -243,7 +243,7 @@ impl EnkaNetwork{
 		self.get_store()?.fight_prop_locale(language)
 	}
 }
-pub(crate) async fn ui_image(path:impl AsRef<str>,api:&EnkaNetwork)->Result<DynamicImage,String>{
+pub async fn ui_image(path:impl AsRef<str>,api:&EnkaNetwork)->Result<DynamicImage,String>{
 	let url=format!("ui/{}.png",path.as_ref());
 	let bytes=api.assets(&url).await?;
 	let bytes=bytes.as_ref();
