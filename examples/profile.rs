@@ -255,7 +255,15 @@ async fn character_card(api:&EnkaNetwork,character:&Character,font:&Font<'_>,lan
 			let img=t.image(&api).await.unwrap();
 			let mut img=img.into_rgba8();
 			let mut base_img=DynamicImage::new_rgba8(CONSTS_SIZE,CONSTS_SIZE).into_rgba8();
-			if let Some(c)=icons.image("Const.svg",6f32){
+			if let Some(mut c)=icons.image("Const.svg",6f32){
+				if t.is_unlock(){
+					let [r,g,b]=character.element.color_rgb();
+					for p in c.pixels_mut(){
+						if p.0[3]<254{
+							p.0=[r,g,b,p.0[3]];
+						}
+					}
+				}
 				image::imageops::overlay(&mut base_img,&c,0,0);
 			}
 			if !t.is_unlock(){
