@@ -182,28 +182,28 @@ impl FightProp{
 		if phys_bonus!=0f64{
 			fp.damage_bonus.insert(Element::None,phys_bonus);
 		}
-		for i in 40..46{
+		for i in 40..47{
 			let v=value_or(json,format!("{}",i),0);
 			if v!=0f64{
 				let e=Self::id_to_element(i);
 				fp.damage_bonus.insert(e,v);
 			}
 		}
-		for i in 50..56{
+		for i in 50..57{
 			let v=value_or(json,format!("{}",i),0);
 			if v!=0f64{
 				let e=Self::id_to_element(i);
 				fp.resist.insert(e,v);
 			}
 		}
-		for i in 70..76{
+		for i in 70..77{
 			let v=value_or(json,format!("{}",i),0);
 			if v!=0f64{
 				let e=Self::id_to_element(i);
 				fp.enegry_cost.insert(e,v);
 			}
 		}
-		for i in 1000..1006{
+		for i in 1000..1007{
 			let v=value_or(json,format!("{}",i),0);
 			if v!=0f64{
 				let e=Self::id_to_element(i);
