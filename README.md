@@ -3,6 +3,12 @@
 https://enka.network/ で提供されるAPIのクライアントライブラリ  
 
 ## 例  
+Cargo.toml
+```toml
+[dependencies]
+enkanetwork-rs={git="https://github.com/eratou/enkanetwork-rs.git",rev="88cce2939be5933797226b105b7ac38e4c0943dc"}
+```
+main.rs
 ```rust
 fn main(){
 	let api=enkanetwork_rs::EnkaNetwork::new().unwrap();
