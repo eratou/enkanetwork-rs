@@ -95,10 +95,24 @@ impl Character{
 		ascension_level_map(self.ascension)
 	}
 }
+#[derive(Debug)]
+pub(crate) enum CharacterParseError{
+	NoAvatarID,
+	InvalidAvatarID,
+	NoStore(String),
+	NoStoreAvatar,
+	InvalidStoreAvatar,
+	NoSkills,
+	InvalidSkillId,
+	NoPropMap,
+	Unknown,
+}
 #[derive(Hash,Copy,Clone,Eq,PartialEq,Debug)]
 pub struct CharacterId(pub u32);
-pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<Character>{
-	let avatar_id=player_character.get("avatarId")?.as_u64()? as u32;
+pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Result<Character,CharacterParseError>{
+	let avatar_id=player_character.get("avatarId");
+	let avatar_id=avatar_id.ok_or(CharacterParseError::NoAvatarID)?;
+	let avatar_id=avatar_id.as_u64().ok_or(CharacterParseError::InvalidAvatarID)? as u32;
 	//println!("player data {:?}",id);
 	let character_id_str=if avatar_id==10000005||avatar_id==10000007{
 		let depot_id=match player_character.get("skillDepotId"){
@@ -109,8 +123,10 @@ pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<
 	}else{
 		format!("{}",avatar_id)
 	};
-	let store=api.get_store().ok()?;
-	let characters=store.characters.get(character_id_str)?.as_object()?;
+	let store=api.get_store().map_err(|s|CharacterParseError::NoStore(s))?;
+	let characters=store.characters.get(character_id_str);
+	let characters=characters.ok_or(CharacterParseError::NoStoreAvatar)?.as_object();
+	let characters=characters.ok_or(CharacterParseError::InvalidStoreAvatar)?;
 	let mut talents=vec![];
 	if let Some(consts)=characters.get("Consts"){
 		if let Some(consts)=consts.as_array() {
@@ -128,7 +144,7 @@ pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<
 			let mut index=0;
 			for name in consts{
 				let talent=CharacterTalent{
-					image:name.as_str()?.to_owned(),
+					image:name.as_str().map(|s|s.to_owned()).unwrap_or_default(),
 					unlock:index<talent_count
 				};
 				index+=1;
@@ -145,7 +161,7 @@ pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<
 		let skill_level_map=crate::get_or_null(player_character,"skillLevelMap");
 		let skill_level_map=skill_level_map.as_object();
 		if let Some(skill_level_map)=skill_level_map{
-			let skill_image=characters.get("Skills")?;
+			let skill_image=characters.get("Skills").ok_or(CharacterParseError::NoSkills)?;
 			let mut skill_map=HashMap::with_capacity(4);
 			for (id,level) in skill_level_map{
 				let image=match skill_image.get(id){
@@ -172,11 +188,11 @@ pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<
 						}
 					},None=>0
 				};
-				let id=u64::from_str(id).ok()? as u32;
+				let id=u64::from_str(id).map_err(|_|CharacterParseError::InvalidSkillId)? as u32;
 				let s=CharacterSkill{
 					extra_level,
 					id,
-					level:level.as_u64()? as u8,
+					level:level.as_u64().unwrap_or_default() as u8,
 					image
 				};
 				skill_map.insert(id,s);
@@ -239,21 +255,28 @@ pub(crate) fn parse_character(api:&EnkaNetwork,player_character:&Value)->Option<
 		},
 		None=>1u8
 	};
-	let prop_map=player_character.get("propMap")?;
+	let prop_map=player_character.get("propMap").ok_or(CharacterParseError::NoPropMap)?;
 	fn prop(prop_map:&Value,key:&str)->Option<u64>{
 		let s=prop_map.get(key)?.get("val")?.as_str()?;
 		u64::from_str(s).ok()
 	}
-	let (weapon,reliquarys)=parse_equip_list(player_character.get("equipList")?.as_array()?);
-	Some(Character{
+	let equip_list=player_character.get("equipList").ok_or(CharacterParseError::Unknown)?;
+	let equip_list=equip_list.as_array().ok_or(CharacterParseError::Unknown)?;
+	let (weapon,reliquarys)=parse_equip_list(equip_list);
+	let fight_prop=FightProp::from_json(player_character.get("fightPropMap").ok_or(CharacterParseError::Unknown)?);
+	let element=characters.get("Element").ok_or(CharacterParseError::Unknown)?.as_str().ok_or(CharacterParseError::Unknown)?;
+	let element=Element::from_str(element).ok().ok_or(CharacterParseError::Unknown)?;
+	let name=characters.get("NameTextMapHash").ok_or(CharacterParseError::Unknown)?.as_u64().ok_or(CharacterParseError::Unknown)? as u32;
+	let weapon=weapon.ok_or(CharacterParseError::Unknown)?;
+	Ok(Character{
 		id:CharacterId(avatar_id),
-		fight_prop:FightProp::from_json(player_character.get("fightPropMap")?),
-		element:Element::from_str(characters.get("Element")?.as_str()?).ok()?,
-		name:characters.get("NameTextMapHash")?.as_u64()? as u32,
+		fight_prop,
+		element,
+		name,
 		talents,
 		skills,
 		reliquarys,
-		weapon:weapon?,
+		weapon,
 		costumes,
 		current_costume,
 		gachaslice:find(characters,"namegachaslice"),

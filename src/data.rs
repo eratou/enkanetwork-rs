@@ -36,8 +36,13 @@ impl RawUserData{
 						if let Some(avatar_info_list)=root.get("avatarInfoList"){
 							if let Some(map)=avatar_info_list.as_array(){
 								for id in map{
-									if let Some(c)=parse_character(api,id){
-										characters.insert(c.id,c);
+									match parse_character(api,id){
+										Ok(c)=>{
+											characters.insert(c.id,c);
+										}
+										Err(e)=>{
+											return Err(format!("parse character error {:?}\n{id}",e));
+										}
 									}
 								}
 							}
