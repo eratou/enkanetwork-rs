@@ -6,7 +6,7 @@ https://enka.network/ で提供されるAPIのクライアントライブラリ
 Cargo.toml
 ```toml
 [dependencies]
-enkanetwork-rs={git="https://github.com/eratou/enkanetwork-rs.git",rev="88cce2939be5933797226b105b7ac38e4c0943dc"}
+enkanetwork-rs={git="https://github.com/eratou/enkanetwork-rs.git",rev="4d1fffaf86135664468dd5b1e89ba4b315db264e"}
 ```
 main.rs
 ```rust
