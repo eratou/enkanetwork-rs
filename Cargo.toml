@@ -18,7 +18,6 @@ redis-cache=["redis","chrono"]
 futures = "0.3"
 async-std = "1.12"
 tokio = { version = "1.23", features = ["rt"]}
-reqwest = { version = "0.11", default-features = false , features = ["gzip"] }
 urlencoding="^2.1.2"
 serde_json = "^1.0.89"
 serde = "^1.0.100"
@@ -37,9 +36,12 @@ resvg = { version = "0.28.0", optional = true}
 redis = { version = "0.22.3", features = ["tokio-comp"] , optional = true}
 chrono = { version = "^0.4.23", optional = true}
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+reqwest = "0.11"
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "*", features = ["rt-multi-thread"]}
-reqwest = { version = "*", default-features = false , features = ["rustls-tls-native-roots"] }
+reqwest = { version = "0.11", default-features = false , features = ["gzip", "rustls-tls-native-roots"] }
 
 [dev-dependencies]
 chrono = "^0.4.23"
