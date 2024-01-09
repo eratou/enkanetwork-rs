@@ -1,12 +1,12 @@
 # enkanetwork-rs
 
-https://enka.network/ で提供されるAPIのクライアントライブラリ  
+Client library for the API provided at https://enka.network/  
 
-## 例  
+## example  
 Cargo.toml
 ```toml
 [dependencies]
-enkanetwork-rs={git="https://github.com/eratou/enkanetwork-rs.git",rev="4d1fffaf86135664468dd5b1e89ba4b315db264e"}
+enkanetwork-rs={git="https://github.com/eratou/enkanetwork-rs.git",rev="02805cedc141da2f3ef60b769465b3d230dff913"}
 ```
 main.rs
 ```rust
@@ -22,15 +22,15 @@ fn main(){
 	}).unwrap();
 }
 ```
-[その他の実装例](examples)
+[other examples](examples)
 
 ## features
-| 名前 | 説明 |
+| Name | Description |
 | :------ | :--------------------------------------- |
-|async-io | ファイル操作に[async-std](https://crates.io/crates/async-std)を使用します |
-|text | テキストの描画を補助する機能を有効にします |
-|vector-icon | svgアイコンの描画を補助する機能を有効にします |
-|redis-cache | メモリキャッシュをredisに置き換えます |
+|async-io | file access by [async-std](https://crates.io/crates/async-std) |
+|text | text render utilities |
+|vector-icon | svg icon utilities |
+|redis-cache | memory cache replace to [redis](https://redis.io/) |
 
 ## target support
 * [x] x86_64-pc-windows-msvc
